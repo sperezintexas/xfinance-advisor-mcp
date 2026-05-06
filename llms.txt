@@ -1,0 +1,21 @@
+# xFinance Rental AI (MCP handoff)
+
+> Public landing for the white-label **Rental AI** HTTP API — use with agents, MCP tool descriptors, or OpenAPI-aware clients.
+
+**Product & production API host:** [atx.fintech-advisor.ai](https://atx.fintech-advisor.ai/)
+
+## Documentation
+
+- [README.md](README.md) — API overview, auth, quickstart
+- [openapi/rental-ai.yaml](openapi/rental-ai.yaml) — OpenAPI 3.1, tag `rental-ai` only
+- [examples/](examples/) — copy-paste curl / minimal scripts
+
+## Live spec (production)
+
+`GET https://atx.fintech-advisor.ai/api/openapi` — full generated inventory; filter **rental-ai**.
+
+## Private implementation
+
+Source of truth for routes and billing: monorepo **`atx-trusted-advisor`**  
+ Maintainer checkout: `atx-trusted-advisor`  
+ Deep-dive: `atx-docs/MCP-AI-ADVISOR.md`

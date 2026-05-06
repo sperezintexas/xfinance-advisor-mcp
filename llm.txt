@@ -1,0 +1,39 @@
+# aTx / xFinance — Rental AI API (MCP & agent handoff)
+
+Version: 1.0 (Phase 1 API)
+Type: Tenant-isolated, Grok-powered options-aware advisor **HTTP API** (document for MCP / A2A: map tools to these routes + OpenAPI schemas).
+Public product & API origin (production): https://atx.fintech-advisor.ai
+Public docs: README.md in this repo
+Static OpenAPI (rental-ai only): openapi/rental-ai.yaml
+Live OpenAPI (full inventory): GET https://atx.fintech-advisor.ai/api/openapi — filter Swagger by tag **rental-ai**
+
+## Implementation source (private monorepo)
+
+HTTP routes, metering, and personas live in **`atx-trusted-advisor`**  
+Local path: /Users/samperez/workspace/atx-trusted-advisor  
+Long-form handoff: atx-docs/MCP-AI-ADVISOR.md  
+Short LLM index (may mirror this file): llm.txt at monorepo root  
+System prompt blocks: atx-docs/guides/rental-ai-system-prompt.md  
+Ops runbook: atx-docs/sre-ops/rental-ai-platform.md
+
+## Endpoints (prefix with https://atx.fintech-advisor.ai in production)
+
+Auth (all routes): Authorization: Bearer atxr_<16-hex key id>_<64-hex secret>
+Keys are hashed on core_tenants.apiKeys; scopes: chat | strategy | analyze.
+
+- POST /api/ai/rent/chat — scope chat. Body: { message, portfolioId?, stream? }. JSON 200 or SSE (Accept: text/event-stream or stream: true). Headers on success: x-rental-tokens-used, x-rental-tokens-remaining.
+- POST /api/ai/rent/strategy — scope strategy. Body: { symbols[], portfolioId?, notes? }. 202 { jobId, pollUrl }; GET /api/ai/rent/strategy?jobId= poll.
+- POST /api/ai/rent/analyze — scope analyze. Body: { jobId?, deepRun? }. 202 + GET /api/ai/rent/analyze?jobId= poll.
+
+## Tenant model (summary)
+
+- rentalProfile: tier, strategyBias (conservative | balanced | aggressive), maxDailyTokens (default 200000 UTC day), expiresAt, optional xaiModelOverride, sample portfolio for chat context.
+- Provisioning: tenant-specs + npm run seed:tenant in the monorepo; publishes rental persona and sample book.
+
+## Guardrails
+
+Rate limits (Redis when configured), per-tenant concurrency cap (MVP), token budget enforcement, strict tenant isolation. Audit: admin_audit_events entityType rental_ai; actor userId rental_key:<key id>.
+
+## Compliance
+
+Educational / not personalized investment advice. No trade execution or order routing via this API.
