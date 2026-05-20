@@ -9,6 +9,7 @@ Primary audience: MCP tool authors, A2A implementers, partner agents.
 Public product & API origin: https://fintech-advisor.ai
 This repo (self-contained for integrators): README.md + docs/mcp-implementation-guide.md
 Static OpenAPI 3.1 (rental-ai only): openapi/rental-ai.yaml
+MCP Discovery manifest: discovery/mcp.json (also live at /mcp/discovery)
 Live canonical OpenAPI: GET https://fintech-advisor.ai/api/openapi (filter tag `rental-ai`)
 
 ## Endpoints (all under https://fintech-advisor.ai)

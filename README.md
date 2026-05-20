@@ -8,6 +8,12 @@ This repository is the **official public landing** for partners, MCP tool author
 
 **Live OpenAPI (canonical):** `GET https://fintech-advisor.ai/api/openapi` — filter by tag `rental-ai`
 
+**Preferred MCP endpoint (self-onboarding):** `https://fintech-advisor.ai/mcp`  
+Use this native endpoint with your `atxr_*` rental key when adding a Custom Connector in Grok. It reuses the full internal logic (no separate proxy needed).
+
+**Discovery document (recommended first call):**  
+`GET https://fintech-advisor.ai/mcp/discovery` (live) or [`discovery/mcp.json`](discovery/mcp.json) (pinned in this repo)
+
 ---
 
 ## For MCP Tool Authors (Fast Path)
@@ -130,12 +136,21 @@ Expose the metering headers on every successful response so the host UI can show
 
 See **[examples/README.md](examples/README.md)** for copy-paste curl commands and the reference MCP server.
 
-**Want the tools inside Grok (including Grok Business)?**  
-Deploy the remote HTTP server in `examples/mcp-server-http/` and register the resulting public `/mcp` URL at:
-- https://grok.com/connectors (Custom)
-- or the **Apps** section of the Grok Business console (`console.x.ai/.../grok-business/apps`)
+**Best way to use with Grok (recommended):**
 
-Full deployment + registration guide is in that folder’s README.
+Point your Custom Connector at the **native MCP endpoint**:
+
+```
+https://fintech-advisor.ai/mcp
+```
+
+Just provide your `atxr_*` rental key when adding the connector at:
+- https://grok.com/connectors → New Connector → Custom
+- or via the Grok Business Apps area in `console.x.ai`
+
+This is the preferred path for tenants because it runs inside the main platform with full internal context, personas, and guardrails.
+
+The standalone example in `examples/mcp-server-http/` is still useful if you need to run the MCP layer separately or in a different environment.
 
 Minimal curl smoke test:
 
@@ -158,6 +173,7 @@ curl -sS "$XFINANCE_ORIGIN/api/ai/rent/chat" \
 |------|---------|
 | [`llm.txt`](llm.txt) | Ultra-dense summary for LLM context windows and RAG |
 | [`llms.txt`](llms.txt) | [llms.txt](https://llmstxt.org/) standard entry |
+| [`discovery/mcp.json`](discovery/mcp.json) | MCP server discovery manifest (tools, auth, capabilities) — live at `/mcp/discovery` |
 | [`openapi/rental-ai.yaml`](openapi/rental-ai.yaml) | Pinned OpenAPI 3.1 snapshot (rental-ai paths & schemas only) |
 
 ---

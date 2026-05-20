@@ -24,6 +24,8 @@ const requiredFiles = [
   'llm.txt',
   'llms.txt',
   'openapi/rental-ai.yaml',
+  'discovery/mcp.json',
+  'discovery/README.md',
   'docs/mcp-implementation-guide.md',
   'examples/README.md'
 ];

@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "server": {
+    "name": "rental-ai-native-mcp",
+    "version": "1.0.0",
+    "description": "Native Model Context Protocol server for the aTx Finance Rental AI (white-label). Provides options-aware, tenant-isolated financial reasoning powered by Grok.",
+    "url": "https://fintech-advisor.ai/mcp",
+    "protocol": "mcp",
+    "transport": ["streamable-http", "json-rpc-over-post"]
+  },
+  "authentication": {
+    "type": "bearer",
+    "header": "Authorization",
+    "format": "Bearer atxr_<16-hex-id>_<64-hex-secret>",
+    "description": "Standard Rental AI API key. Keys are minted per tenant via the admin API and carry scopes (chat, strategy, analyze)."
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false,
+    "streaming_chat": true
+  },
+  "rate_limits": {
+    "note": "Per-tenant daily token budget (default 200,000 tokens / UTC day). Concurrency limits may apply. Metering headers (x-rental-tokens-*) are returned on every successful response."
+  },
+  "tools": [
+    {
+      "name": "rental_ai_chat",
+      "description": "Send a natural language question to the tenant-scoped Rental AI advisor. Returns markdown analysis with options-aware context and the tenant strategyBias injected. Supports streaming. IMPORTANT: outputs are educational only and NOT personalized financial advice.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "message": { "type": "string", "description": "The user question or instruction" },
+          "portfolioId": { "type": "string", "description": "Optional 24-hex Mongo portfolio id to scope context" },
+          "stream": { "type": "boolean", "description": "If true, the backend uses SSE for generation (recommended)", "default": false }
+        },
+        "required": ["message"]
+      }
+    },
+    {
+      "name": "rental_ai_create_strategy",
+      "description": "Start an async options strategy materialization job for the given symbols. Returns a jobId immediately. Poll with rental_ai_get_strategy.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "symbols": { "type": "array", "items": { "type": "string" }, "description": "e.g. [\"NVDA\", \"SPY\", \"TSLA\"]" },
+          "notes": { "type": "string", "description": "Free-text bias or constraints (e.g. \"conservative income only\")" },
+          "portfolioId": { "type": "string", "description": "Optional owned portfolio to enrich context" }
+        },
+        "required": ["symbols"]
+      }
+    },
+    {
+      "name": "rental_ai_get_strategy",
+      "description": "Poll a previously created strategy job. Returns status + result when completed.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "jobId": { "type": "string", "description": "The jobId returned from rental_ai_create_strategy" }
+        },
+        "required": ["jobId"]
+      }
+    },
+    {
+      "name": "rental_ai_create_analyze",
+      "description": "Kick off (or continue) a deep portfolio/position analysis. Returns jobId.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "jobId": { "type": "string", "description": "Optional existing jobId to extend" },
+          "deepRun": { "type": "boolean", "description": "Run deeper / more expensive analysis", "default": false }
+        }
+      }
+    },
+    {
+      "name": "rental_ai_get_analyze",
+      "description": "Poll an analyze job. Returns status + narrative or structured result.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "jobId": { "type": "string" }
+        },
+        "required": ["jobId"]
+      }
+    }
+  ],
+  "recommended_usage": {
+    "grok_connector_url": "https://fintech-advisor.ai/mcp",
+    "discovery_url": "https://fintech-advisor.ai/mcp/discovery",
+    "example": {
+      "tool": "rental_ai_chat",
+      "arguments": {
+        "message": "Run a conservative wheel income analysis on my NVDA and SPY positions using the rental advisor.",
+        "stream": false
+      }
+    }
+  },
+  "links": {
+    "live_endpoint": "https://fintech-advisor.ai/mcp",
+    "discovery": "https://fintech-advisor.ai/mcp/discovery",
+    "openapi": "https://fintech-advisor.ai/api/openapi?tag=rental-ai",
+    "public_handoff_repo": "https://github.com/atxfinance/xfinance-advisor-mcp",
+    "docs": "https://fintech-advisor.ai"
+  },
+  "contact": {
+    "security": "security@fintech-advisor.ai"
+  }
+}

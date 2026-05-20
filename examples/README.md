@@ -99,17 +99,15 @@ Deep implementation patterns (streaming, polling, error mapping, production chec
 
 ---
 
-## 3. Remote HTTP MCP Server (for Grok Business / Hosted Use)
+## 3. Remote HTTP MCP Server (advanced / self-hosted use)
 
-If you want to register the Rental AI as a first-class **App/Connector** inside Grok (especially via the Grok Business console at `console.x.ai/.../grok-business/apps` or at https://grok.com/connectors), you need a publicly reachable HTTP MCP server.
+**Preferred for most tenants:** Use the native MCP endpoint at  
+`https://fintech-advisor.ai/mcp` (with your `atxr_*` key).  
+This is the recommended way to connect Grok — it runs inside the main platform with full internal capabilities.
 
-A complete, deployable reference lives in:
+The standalone server below is useful when you need to run the MCP layer in a different environment, add custom middleware, or support non-tenant use cases.
 
-```
-examples/mcp-server-http/
-```
-
-It uses the modern Streamable HTTP transport and is designed to be deployed to Railway, Fly.io, Render, etc.
+A complete, deployable reference implementation still lives in:
 
 ### When to use this instead of the stdio server
 

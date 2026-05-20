@@ -1,6 +1,16 @@
 # Rental AI — Remote HTTP MCP Server (Grok-ready)
 
-This package turns the aTx Finance Rental AI into a **publicly reachable MCP server** that you can register as a **Custom Connector** in Grok (including inside Grok Business).
+This package turns the aTx Finance Rental AI into a **publicly reachable MCP server**.
+
+**Note:** If you are a tenant of the main platform, the **preferred and simplest option** is to use the native MCP endpoint at:
+
+```
+https://fintech-advisor.ai/mcp
+```
+
+with your existing `atxr_*` rental key. No separate deployment is required.
+
+This standalone server is mainly useful for advanced/self-hosted scenarios or when you want to run the MCP layer independently.
 
 Once registered, your team can ask Grok natural-language questions about options strategies, wheel income, portfolio analysis, etc., and Grok will call your tenant-scoped Rental AI under the hood — with proper token metering.
 

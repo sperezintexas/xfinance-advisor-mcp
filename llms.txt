@@ -14,7 +14,9 @@
 ## Machine-Readable Contract
 
 - [openapi/rental-ai.yaml](openapi/rental-ai.yaml) — OpenAPI 3.1, rental-ai paths & schemas only (pinned mirror)
-- Live: `GET https://fintech-advisor.ai/api/openapi` (filter tag `rental-ai`)
+- [discovery/mcp.json](discovery/mcp.json) — MCP server discovery manifest (tools, auth, capabilities)
+- Live discovery: `GET https://fintech-advisor.ai/mcp/discovery`
+- Live OpenAPI: `GET https://fintech-advisor.ai/api/openapi` (filter tag `rental-ai`)
 
 ## Short Index
 
