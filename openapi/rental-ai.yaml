@@ -6,7 +6,7 @@ info:
     **Static export:** `rental-ai` paths and schemas for MCP / agent tooling.
     **Canonical live document:** `GET https://atx.fintech-advisor.ai/api/openapi` (filter tag `rental-ai`).
     **Product:** [aTx Trusted Advisory](https://atx.fintech-advisor.ai/).
-  version: 1.0.0
+  version: 1.0.1
   contact:
     name: aTx Finance
     url: https://atx.fintech-advisor.ai/

@@ -1,0 +1,26 @@
+# Project-scoped MCP configuration for xfinance-advisor-mcp
+# This repo is the public handoff surface for the Rental AI API.
+# When working here, prefer these servers for GitHub integration and safe local tools.
+
+[mcp_servers.github]
+# Official GitHub MCP server (stdio). Requires a PAT with appropriate scopes.
+# Used for managing issues/PRs on the public handoff repo and cross-referencing
+# the private monorepo when preparing syncs.
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-github"]
+env = { GITHUB_PERSONAL_ACCESS_TOKEN = "${GITHUB_TOKEN}" }
+enabled = true
+startup_timeout_sec = 15
+
+[mcp_servers.filesystem]
+# Scoped filesystem access limited to this repository for safety.
+# Prevents accidental reads/writes outside the handoff docs surface.
+command = "npx"
+args = ["-y", "@modelcontextprotocol/server-filesystem", "/Users/samperez/workspace/xfinance-advisor-mcp"]
+enabled = true
+
+# Optional: Add your own internal Notion or Slack MCP servers here if you use them
+# for release notes or partner coordination when updating this public surface.
+# [mcp_servers.notion]
+# url = "https://mcp.notion.com/..."
+# enabled = true

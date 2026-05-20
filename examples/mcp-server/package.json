@@ -1,0 +1,26 @@
+{
+  "name": "rental-ai-mcp-server-example",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Minimal, production-ready starting point for an MCP server that exposes the aTx Finance Rental AI (white-label) API as tools.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "Unlicense",
+  "keywords": ["mcp", "rental-ai", "atx-finance", "options", "advisor"]
+}

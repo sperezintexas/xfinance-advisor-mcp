@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+package-lock.json
+examples/mcp-server/node_modules/
+examples/mcp-server/package-lock.json
+
+# Secrets
+.env
+.env.local
+*.key
+atxr_*
+
+# Build artifacts
+dist/
+*.tsbuildinfo
+
+# OS / editor
+.DS_Store
+*.code-workspace
+.idea/
+.vscode/
+
+# Logs
+*.log
+logs/
+
+# Temporary validation artifacts
+/tmp/rental-*

@@ -1,87 +1,181 @@
-# xFinance Rental AI — public MCP & agent handoff
+# xFinance Rental AI — Public MCP & Agent Handoff (v1.1)
 
-**aTx Finance** white-label, tenant-isolated **Rental AI** HTTP API: Grok-backed chat (JSON or SSE), async **strategy** and **analyze** jobs with polling. Use this repo as the **public landing** for partners, LLM crawlers, and MCP tool authors.
+**White-label, tenant-isolated Grok-powered options-aware advisor HTTP API.**
 
-**Public product site:** [aTx Trusted Advisory](https://atx.fintech-advisor.ai/) — same deployment hosts the **Next.js** API under `https://atx.fintech-advisor.ai`.
+This repository is the **official public landing** for partners, MCP tool authors, A2A implementers, and LLM crawlers. It contains everything you need to build a high-quality integration against the Rental AI surface **without** access to the private monorepo.
 
-| Resource | Purpose |
-|----------|---------|
-| [`llm.txt`](llm.txt) | Short machine-readable index (endpoints, auth, scopes) |
-| [`llms.txt`](llms.txt) | [llms.txt](https://llmstxt.org/) style entry → README + OpenAPI |
-| [`openapi/rental-ai.yaml`](openapi/rental-ai.yaml) | OpenAPI **3.1** export, **`rental-ai`** paths only |
-| [`examples/`](examples/) | curl quickstarts |
+**Production base URL:** `https://atx.fintech-advisor.ai`
 
-**Tagline context:** Options-aware advisor surface — “No Atoms Moved. Just Gains Earned.” (brand details in the core product, not duplicated here.)
+**Live OpenAPI (canonical):** `GET https://atx.fintech-advisor.ai/api/openapi` — filter by tag `rental-ai`
 
 ---
 
-## Implementation source (private monorepo)
+## For MCP Tool Authors (Fast Path)
 
-All runtime behavior, metering, personas, and the **generated** OpenAPI inventory live in the private **xfinance core** monorepo:
+1. Read this README (you are here).
+2. Authenticate with a per-tenant `atxr_<id>_<secret>` Bearer key (scopes: `chat`, `strategy`, `analyze`).
+3. Map one MCP tool per primary operation (or use the reference implementation in `examples/mcp-server/`).
+4. Handle **SSE streaming** for chat and the **202 + poll** pattern for strategy/analyze jobs.
+5. Surface the metering headers (`x-rental-tokens-used`, `x-rental-tokens-remaining`) to your users.
+6. For deeper patterns, error shapes, and production reference code, see **[docs/mcp-implementation-guide.md](docs/mcp-implementation-guide.md)**.
 
-| | |
-|--|--|
-| **Repository** | `atx-trusted-advisor` (private) |
-| **Typical local path** | `/Users/samperez/workspace/atx-trusted-advisor` |
-| **Handoff doc** | `atx-docs/MCP-AI-ADVISOR.md` |
-| **Monorepo LLM index** | `llm.txt` (root) |
-| **System prompt / bias** | `atx-docs/guides/rental-ai-system-prompt.md` |
-| **Ops** | `atx-docs/sre-ops/rental-ai-platform.md` |
-| **OpenAPI source** | `src/lib/openapi/current-state.ts`, `current-state-overrides.ts` |
-
-When contracts change in the monorepo, refresh **`openapi/rental-ai.yaml`** here (or treat **live** `GET /api/openapi` as canonical and use this file as a stable mirror for GitHub Pages / static hosting).
+You should be able to ship a working MCP server in < 1 day.
 
 ---
 
-## API spec (summary)
+## Authentication
 
-### Base URL
+All requests require:
 
-**Production:** `https://atx.fintech-advisor.ai` — all `/api/*` routes (including rental AI) use this origin. Product home: [atx.fintech-advisor.ai](https://atx.fintech-advisor.ai/).
+```
+Authorization: Bearer atxr_<16-hex-key-id>_<64-hex-secret>
+```
 
-### Authentication
+- Keys are minted per tenant via the admin API or ops tooling in the core platform.
+- Each key declares one or more scopes. Routes enforce the matching scope.
+- Keys are **never** logged in plaintext by the server.
 
-| Header | Value |
-|--------|--------|
-| `Authorization` | `Bearer atxr_<16-hex-key-id>_<64-hex-secret>` |
-
-Keys are per-tenant, stored hashed on `core_tenants.apiKeys`. Each key grants one or more scopes: **`chat`**, **`strategy`**, **`analyze`**.
-
-### Endpoints
-
-| Scope | Method | Path | Behavior |
-|-------|--------|------|----------|
-| `chat` | `POST` | `/api/ai/rent/chat` | Body: `{ message, portfolioId?, stream? }`. **200** JSON or **SSE** (`Accept: text/event-stream` or `"stream": true`). Headers: `x-rental-tokens-used`, `x-rental-tokens-remaining`. |
-| `strategy` | `POST` | `/api/ai/rent/strategy` | Body: `{ symbols[], portfolioId?, notes? }`. **202** + `jobId`, `pollUrl`. |
-| `strategy` | `GET` | `/api/ai/rent/strategy?jobId=` | Poll job. |
-| `analyze` | `POST` | `/api/ai/rent/analyze` | Body: `{ jobId?, deepRun? }`. **202** + poll. |
-| `analyze` | `GET` | `/api/ai/rent/analyze?jobId=` | Poll job. |
-
-### Live OpenAPI
-
-**Production:** `GET https://atx.fintech-advisor.ai/api/openapi` — filter documentation by tag **`rental-ai`** (operators may also use Swagger at `/admin/api-docs` when signed in).
-
-### MCP / A2A usage
-
-- Map one MCP tool per HTTP operation (or thin client wrapper).
-- **Schemas:** `openapi/rental-ai.yaml` or the live OpenAPI document.
-- **System prompt/bias:** see monorepo `atx-docs/guides/rental-ai-system-prompt.md` and `MCP-AI-ADVISOR.md`.
+**Do not** ship real keys in client code or public examples. Use environment variables and placeholder tokens in documentation.
 
 ---
 
-## Quickstart
+## Core Capabilities
 
-See **[examples/README.md](examples/README.md)** for copy-paste **curl** and environment setup.
+| Capability | Method & Path | Scope | Behavior |
+|------------|---------------|-------|----------|
+| **Chat** | `POST /api/ai/rent/chat` | `chat` | Natural language query with tenant `strategyBias` + workspace snapshot injected server-side. Returns markdown (or SSE stream). |
+| **Strategy** | `POST /api/ai/rent/strategy` | `strategy` | `{ symbols[], portfolioId?, notes? }` → `202` with `jobId` + `pollUrl`. Poll for options strategy materialization. |
+| **Analyze** | `POST /api/ai/rent/analyze` | `analyze` | `{ jobId?, deepRun? }` → `202` + poll. Deep portfolio / position analysis. |
+
+### Chat (JSON + SSE)
+
+**Request:**
+```json
+{
+  "message": "Outline a conservative wheel income plan on NVDA using my current book.",
+  "username": "partnerDesk",           // optional X handle → resolves to tenant member
+  "portfolioId": "507f1f77bcf86cd799439011", // optional; scopes to owned portfolio
+  "stream": false
+}
+```
+
+**Success (200 JSON):**
+```json
+{
+  "ok": true,
+  "correlationId": "...",
+  "tenantSlug": "acme-ia",
+  "data": {
+    "response": "# Conservative Wheel on NVDA\n...",
+    "model": "grok-4-1-fast-reasoning",
+    "usage": { ... }
+  }
+}
+```
+
+**Headers on success:**
+- `x-rental-tokens-used`
+- `x-rental-tokens-remaining`
+
+**Streaming:** Send `Accept: text/event-stream` **or** `"stream": true`. Server emits OpenAI-style `chat.completion.chunk` deltas and terminates with `data: [DONE]`.
+
+See the implementation guide for robust SSE client patterns.
+
+### Strategy Job (async)
+
+```bash
+# Start
+curl -X POST "$ORIGIN/api/ai/rent/strategy" \
+  -H "Authorization: Bearer $RENTAL_TOKEN" \
+  -d '{"symbols":["NVDA","SPY"],"notes":"conservative bias"}'
+
+# Poll
+curl "$ORIGIN/api/ai/rent/strategy?jobId=$JOB" \
+  -H "Authorization: Bearer $RENTAL_TOKEN"
+```
+
+Returns `202` with `{ jobId, pollUrl }`. Poll until `status: "completed"` (MVP currently materializes quickly).
+
+### Analyze Job
+
+Same 202 + poll pattern. Use after a strategy job or standalone with `deepRun: true`.
 
 ---
 
-## Compliance & scope
+## Recommended MCP Tool Shapes
 
-Educational / not personalized investment advice. **No** trade execution or order routing through this API. Outputs should carry standard disclaimers.
+For best ergonomics in agent frameworks:
+
+- `rental_ai_chat(message, portfolioId?, stream?)` — primary conversational surface
+- `rental_ai_create_strategy(symbols[], notes?, portfolioId?)` — returns jobId immediately
+- `rental_ai_poll_strategy(jobId)` — or a combined "wait for completion" helper
+- `rental_ai_analyze(jobId?, deepRun?)`
+
+Expose the metering headers on every successful response so the host UI can show remaining budget.
+
+**Never** claim the outputs are personalized financial advice. The server injects a standard disclaimer; your wrapper should too.
 
 ---
 
-## Sync checklist (maintainers)
+## Token Budgets & Guardrails
 
-1. Contract change in `atx-trusted-advisor` → update `openapi/rental-ai.yaml` and **`llm.txt`** if paths or auth change.
-2. Prefer verifying against **`GET https://atx.fintech-advisor.ai/api/openapi`** (or your staging origin) before tagging a release of this docs repo.
+- Default **200,000 tokens / UTC day** per tenant (`maxDailyTokens` in `rentalProfile`).
+- Failed guardrails (safety, policy) do **not** consume tokens.
+- Concurrency cap (currently 8 per tenant) when Redis is enabled.
+- Clients should treat `429` with `Retry-After` or the metering headers as signals to back off.
+
+---
+
+## Quickstarts
+
+See **[examples/README.md](examples/README.md)** for copy-paste curl commands and the reference MCP server.
+
+Minimal curl smoke test:
+
+```bash
+export XFINANCE_ORIGIN="https://atx.fintech-advisor.ai"
+export RENTAL_TOKEN="atxr_...your-key..."
+
+curl -sS "$XFINANCE_ORIGIN/api/ai/rent/chat" \
+  -H "Authorization: Bearer $RENTAL_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"message":"One paragraph on wheel vs buy-write for NVDA.","stream":false}' \
+  | jq .
+```
+
+---
+
+## Machine-Readable Indexes
+
+| File | Purpose |
+|------|---------|
+| [`llm.txt`](llm.txt) | Ultra-dense summary for LLM context windows and RAG |
+| [`llms.txt`](llms.txt) | [llms.txt](https://llmstxt.org/) standard entry |
+| [`openapi/rental-ai.yaml`](openapi/rental-ai.yaml) | Pinned OpenAPI 3.1 snapshot (rental-ai paths & schemas only) |
+
+---
+
+## Versioning & Source of Truth
+
+- **Handoff surface (this repo):** v1.1 (this document + improved MCP guidance)
+- **API contract:** Phase 1 — paths and major schemas are stable
+- **Live spec:** `GET /api/openapi` (always filter tag `rental-ai`)
+- **Private implementation:** `atx-trusted-advisor` monorepo (`atx-docs/MCP-AI-ADVISOR.md`, `sre-ops/rental-ai-platform.md`)
+
+When the underlying API evolves, this public mirror and docs are updated via the process in `AGENTS.md`.
+
+---
+
+## Compliance
+
+Outputs are **educational only** and **not personalized investment advice**. No trade execution or order routing occurs through this API. All responses should carry appropriate disclaimers in your integration surface.
+
+---
+
+## Next Steps for Integrators
+
+- Read **[docs/mcp-implementation-guide.md](docs/mcp-implementation-guide.md)** for streaming clients, polling loops, error taxonomy, and production TypeScript / Python examples.
+- Clone `examples/mcp-server/` as a starting point for your own tool.
+- Contact your aTx Finance representative for tenant onboarding, key issuance, and commercial terms.
+
+**No atoms moved. Just gains earned.**

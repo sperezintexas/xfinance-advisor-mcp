@@ -1,0 +1,34 @@
+{
+  "name": "xfinance-rental-ai-handoff",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Public documentation, OpenAPI mirror, and MCP integration guidance for the aTx Finance Rental AI (white-label) HTTP API",
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/validate-openapi.mjs && node scripts/validate-docs.mjs",
+    "validate:openapi": "node scripts/validate-openapi.mjs",
+    "validate:docs": "node scripts/validate-docs.mjs",
+    "lint": "npm run validate:openapi && npm run validate:docs"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^10.1.1",
+    "yaml": "^2.4.1"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/atxfinance/xfinance-advisor-mcp.git"
+  },
+  "license": "Unlicense",
+  "keywords": [
+    "mcp",
+    "openapi",
+    "rental-ai",
+    "atx-finance",
+    "options",
+    "advisor",
+    "white-label"
+  ]
+}

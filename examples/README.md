@@ -1,15 +1,23 @@
-# Quickstart — Rental AI HTTP API
+# Quickstart — Rental AI HTTP API + MCP
 
-Set:
+**Base URL (production):** `https://atx.fintech-advisor.ai`
+
+**Auth:** `Authorization: Bearer atxr_<16-hex>_<64-hex>`
+
+All examples below assume:
 
 ```bash
 export XFINANCE_ORIGIN="https://atx.fintech-advisor.ai"
-export RENTAL_TOKEN="atxr_<16-hex>_<64-hex>"   # chat + strategy + analyze per key
+export RENTAL_TOKEN="atxr_...your-key-with-chat-strategy-analyze..."
 ```
 
-Use **only** TLS in production. Override `XFINANCE_ORIGIN` for staging or local dev.
+Use TLS only. The token must have the scopes required by each endpoint.
 
-## Chat (JSON)
+---
+
+## 1. Raw HTTP (curl)
+
+### Chat (JSON + metering headers)
 
 ```bash
 curl -sS "${XFINANCE_ORIGIN}/api/ai/rent/chat" \
@@ -22,7 +30,7 @@ grep -i x-rental /tmp/rental-hdr.txt || true
 cat /tmp/rental-body.json
 ```
 
-## Chat (SSE)
+### Chat (SSE streaming)
 
 ```bash
 curl -sS -N "${XFINANCE_ORIGIN}/api/ai/rent/chat" \
@@ -32,7 +40,7 @@ curl -sS -N "${XFINANCE_ORIGIN}/api/ai/rent/chat" \
   -d '{"message":"One paragraph on wheel vs buy-write for NVDA.","stream":true}'
 ```
 
-## Strategy job (accept + poll)
+### Strategy job (fire + poll)
 
 ```bash
 ACC=$(curl -sS -X POST "${XFINANCE_ORIGIN}/api/ai/rent/strategy" \
@@ -42,38 +50,61 @@ ACC=$(curl -sS -X POST "${XFINANCE_ORIGIN}/api/ai/rent/strategy" \
 
 echo "$ACC"
 JOB=$(echo "$ACC" | sed -n 's/.*"jobId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
-test -n "$JOB"
 
 curl -sS "${XFINANCE_ORIGIN}/api/ai/rent/strategy?jobId=${JOB}" \
   -H "Authorization: Bearer ${RENTAL_TOKEN}"
 ```
 
-## Analyze job (accept + poll)
+### Analyze job
+
+Same pattern as strategy using `/api/ai/rent/analyze`.
+
+### Live OpenAPI (filter to rental-ai)
 
 ```bash
-ACC=$(curl -sS -X POST "${XFINANCE_ORIGIN}/api/ai/rent/analyze" \
-  -H "Authorization: Bearer ${RENTAL_TOKEN}" \
-  -H "Content-Type: application/json" \
-  -d '{}')
-
-echo "$ACC"
-JOB=$(echo "$ACC" | sed -n 's/.*"jobId"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)
-test -n "$JOB"
-
-curl -sS "${XFINANCE_ORIGIN}/api/ai/rent/analyze?jobId=${JOB}" \
-  -H "Authorization: Bearer ${RENTAL_TOKEN}"
+curl -sS "${XFINANCE_ORIGIN}/api/openapi" | jq '.paths | keys | map(select(startswith("/api/ai/rent")))'
 ```
 
-## Fetch live OpenAPI (full inventory)
+---
+
+## 2. Reference MCP Server (Recommended Starting Point)
+
+A complete, minimal, well-documented TypeScript stdio MCP server lives in:
+
+```
+examples/mcp-server/
+```
+
+It exposes:
+
+- `rental_ai_chat`
+- `rental_ai_create_strategy` / `rental_ai_get_strategy`
+- `rental_ai_create_analyze` / `rental_ai_get_analyze`
+
+### Run the reference server
 
 ```bash
-curl -sS "${XFINANCE_ORIGIN}/api/openapi" | head -c 2000 && echo ...
+cd examples/mcp-server
+npm install
+npm run build
+export RENTAL_AI_KEY="$RENTAL_TOKEN"
+npm start
 ```
 
-Filter your viewer or CI for tag **`rental-ai`**.
+Then register it with your MCP host (Cursor, Claude Desktop, Grok, etc.) as a stdio server.
 
-## Private implementation
+Full instructions and hardening checklist: [examples/mcp-server/README.md](mcp-server/README.md)
 
-Routes and tests: monorepo **`atx-trusted-advisor`** — local path `/Users/samperez/workspace/atx-trusted-advisor`.
+Deep implementation patterns (streaming, polling, error mapping, production checklist): **[docs/mcp-implementation-guide.md](../docs/mcp-implementation-guide.md)**
 
-Documentation: `atx-docs/MCP-AI-ADVISOR.md`, `atx-docs/sre-ops/rental-ai-platform.md`.
+---
+
+## Private Implementation Source
+
+The actual routes, metering, personas, and OpenAPI generator live in the private monorepo `atx-trusted-advisor`.
+
+- Deep handoff: `atx-docs/MCP-AI-ADVISOR.md`
+- Ops runbook: `atx-docs/sre-ops/rental-ai-platform.md`
+- System prompt + bias: `atx-docs/guides/rental-ai-system-prompt.md`
+
+This public repo is deliberately self-contained for 90% of integration work. You only need the private docs when you are a tenant operator provisioning new rental profiles or debugging production incidents.

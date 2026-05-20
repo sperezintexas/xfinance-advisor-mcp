@@ -1,21 +1,32 @@
-# xFinance Rental AI (MCP handoff)
+# xFinance Rental AI (MCP handoff) — v1.1
 
-> Public landing for the white-label **Rental AI** HTTP API — use with agents, MCP tool descriptors, or OpenAPI-aware clients.
+> Public landing + self-contained integration guide for the white-label **Rental AI** HTTP API.
+> Target: MCP tool authors, agent builders, partner platforms, LLM crawlers.
 
-**Product & production API host:** [atx.fintech-advisor.ai](https://atx.fintech-advisor.ai/)
+**Product & production API:** [atx.fintech-advisor.ai](https://atx.fintech-advisor.ai/)
 
-## Documentation
+## Primary Documentation (read these first)
 
-- [README.md](README.md) — API overview, auth, quickstart
-- [openapi/rental-ai.yaml](openapi/rental-ai.yaml) — OpenAPI 3.1, tag `rental-ai` only
-- [examples/](examples/) — copy-paste curl / minimal scripts
+- [README.md](README.md) — auth, endpoints, quickstarts, MCP tool recommendations, token metering
+- [docs/mcp-implementation-guide.md](docs/mcp-implementation-guide.md) — streaming, polling, error handling, production patterns, TS reference code
+- [examples/mcp-server/](examples/mcp-server/) — copy-paste ready minimal stdio MCP server (TypeScript)
 
-## Live spec (production)
+## Machine-Readable Contract
 
-`GET https://atx.fintech-advisor.ai/api/openapi` — full generated inventory; filter **rental-ai**.
+- [openapi/rental-ai.yaml](openapi/rental-ai.yaml) — OpenAPI 3.1, rental-ai paths & schemas only (pinned mirror)
+- Live: `GET https://atx.fintech-advisor.ai/api/openapi` (filter tag `rental-ai`)
 
-## Private implementation
+## Short Index
 
-Source of truth for routes and billing: monorepo **`atx-trusted-advisor`**  
- Maintainer checkout: `atx-trusted-advisor`  
- Deep-dive: `atx-docs/MCP-AI-ADVISOR.md`
+- Auth: Bearer `atxr_<id>_<secret>` with scopes `chat | strategy | analyze`
+- Chat: POST /api/ai/rent/chat (JSON or SSE) — returns markdown + `x-rental-tokens-*` headers
+- Strategy: POST /api/ai/rent/strategy → 202 jobId → GET ?jobId= poll
+- Analyze: same async job pattern
+- Guardrails: per-tenant daily token budget (default 200k), concurrency limits, strict isolation
+
+## Private Implementation (for operators only)
+
+Full source, personas, billing, and ops runbooks live in the `atx-trusted-advisor` monorepo.
+Public handoff docs are deliberately sufficient for 90%+ of MCP / agent integration work.
+
+**Current handoff version:** 1.1 (Phase 1 API contract)

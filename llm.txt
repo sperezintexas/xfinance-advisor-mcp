@@ -1,39 +1,42 @@
-# aTx / xFinance — Rental AI API (MCP & agent handoff)
+# aTx / xFinance — Rental AI API (MCP & agent handoff) — v1.1
 
-Version: 1.0 (Phase 1 API)
-Type: Tenant-isolated, Grok-powered options-aware advisor **HTTP API** (document for MCP / A2A: map tools to these routes + OpenAPI schemas).
-Public product & API origin (production): https://atx.fintech-advisor.ai
-Public docs: README.md in this repo
-Static OpenAPI (rental-ai only): openapi/rental-ai.yaml
-Live OpenAPI (full inventory): GET https://atx.fintech-advisor.ai/api/openapi — filter Swagger by tag **rental-ai**
+Handoff version: 1.1 (improved MCP guidance + self-contained docs)
+API contract: Phase 1 (stable)
 
-## Implementation source (private monorepo)
+Type: Tenant-isolated, Grok-powered options-aware advisor **HTTP API**.
+Primary audience: MCP tool authors, A2A implementers, partner agents.
 
-HTTP routes, metering, and personas live in **`atx-trusted-advisor`**  
-Local path: /Users/samperez/workspace/atx-trusted-advisor  
-Long-form handoff: atx-docs/MCP-AI-ADVISOR.md  
-Short LLM index (may mirror this file): llm.txt at monorepo root  
-System prompt blocks: atx-docs/guides/rental-ai-system-prompt.md  
-Ops runbook: atx-docs/sre-ops/rental-ai-platform.md
+Public product & API origin: https://atx.fintech-advisor.ai
+This repo (self-contained for integrators): README.md + docs/mcp-implementation-guide.md
+Static OpenAPI 3.1 (rental-ai only): openapi/rental-ai.yaml
+Live canonical OpenAPI: GET https://atx.fintech-advisor.ai/api/openapi (filter tag `rental-ai`)
 
-## Endpoints (prefix with https://atx.fintech-advisor.ai in production)
+## Endpoints (all under https://atx.fintech-advisor.ai)
 
-Auth (all routes): Authorization: Bearer atxr_<16-hex key id>_<64-hex secret>
-Keys are hashed on core_tenants.apiKeys; scopes: chat | strategy | analyze.
+Auth: `Authorization: Bearer atxr_<16-hex>_<64-hex-secret>`
+Scopes per key: chat | strategy | analyze (enforced on routes)
 
-- POST /api/ai/rent/chat — scope chat. Body: { message, portfolioId?, stream? }. JSON 200 or SSE (Accept: text/event-stream or stream: true). Headers on success: x-rental-tokens-used, x-rental-tokens-remaining.
-- POST /api/ai/rent/strategy — scope strategy. Body: { symbols[], portfolioId?, notes? }. 202 { jobId, pollUrl }; GET /api/ai/rent/strategy?jobId= poll.
-- POST /api/ai/rent/analyze — scope analyze. Body: { jobId?, deepRun? }. 202 + GET /api/ai/rent/analyze?jobId= poll.
+- POST /api/ai/rent/chat (chat) — { message, portfolioId?, stream? } → 200 JSON or SSE. Headers: x-rental-tokens-used, x-rental-tokens-remaining.
+- POST /api/ai/rent/strategy (strategy) — { symbols[], notes?, portfolioId? } → 202 { jobId, pollUrl }
+- GET  /api/ai/rent/strategy?jobId=... → poll for result
+- POST /api/ai/rent/analyze (analyze) — { jobId?, deepRun? } → 202 + poll
+- GET  /api/ai/rent/analyze?jobId=...
 
-## Tenant model (summary)
+## Tenant & Guardrails (summary for tool authors)
 
-- rentalProfile: tier, strategyBias (conservative | balanced | aggressive), maxDailyTokens (default 200000 UTC day), expiresAt, optional xaiModelOverride, sample portfolio for chat context.
-- Provisioning: tenant-specs + npm run seed:tenant in the monorepo; publishes rental persona and sample book.
-
-## Guardrails
-
-Rate limits (Redis when configured), per-tenant concurrency cap (MVP), token budget enforcement, strict tenant isolation. Audit: admin_audit_events entityType rental_ai; actor userId rental_key:<key id>.
+- Each tenant has `rentalProfile.strategyBias` (conservative | balanced | aggressive) injected automatically.
+- Default daily budget: 200k tokens / UTC day. Metering headers returned on every chat success.
+- Concurrency + rate limits per tenant. 429 + Retry-After on exhaustion.
+- Strict isolation. Audit trail on `admin_audit_events`.
 
 ## Compliance
 
-Educational / not personalized investment advice. No trade execution or order routing via this API.
+Educational only. Not personalized investment advice. No execution.
+
+## For deeper patterns
+
+- Streaming clients, polling loops, error taxonomy, production checklist → docs/mcp-implementation-guide.md
+- Reference MCP server (TypeScript) → examples/mcp-server/
+- Raw curl quickstarts → examples/README.md
+
+Implementation source of truth (private): atx-trusted-advisor monorepo (MCP-AI-ADVISOR.md, rental-ai-platform.md).
