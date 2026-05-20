@@ -1,9 +1,9 @@
-# xFinance Rental AI (MCP handoff) — v1.1
+# xFinance Rental AI (MCP handoff) — v1.1.1
 
 > Public landing + self-contained integration guide for the white-label **Rental AI** HTTP API.
 > Target: MCP tool authors, agent builders, partner platforms, LLM crawlers.
 
-**Product & production API:** [atx.fintech-advisor.ai](https://atx.fintech-advisor.ai/)
+**Product & production API:** [fintech-advisor.ai](https://fintech-advisor.ai/)
 
 ## Primary Documentation (read these first)
 
@@ -14,7 +14,7 @@
 ## Machine-Readable Contract
 
 - [openapi/rental-ai.yaml](openapi/rental-ai.yaml) — OpenAPI 3.1, rental-ai paths & schemas only (pinned mirror)
-- Live: `GET https://atx.fintech-advisor.ai/api/openapi` (filter tag `rental-ai`)
+- Live: `GET https://fintech-advisor.ai/api/openapi` (filter tag `rental-ai`)
 
 ## Short Index
 
@@ -29,4 +29,4 @@
 Full source, personas, billing, and ops runbooks live in the `atx-trusted-advisor` monorepo.
 Public handoff docs are deliberately sufficient for 90%+ of MCP / agent integration work.
 
-**Current handoff version:** 1.1 (Phase 1 API contract)
+**Current handoff version:** 1.1.1 (Phase 1 API contract)

@@ -1,17 +1,17 @@
-# aTx / xFinance — Rental AI API (MCP & agent handoff) — v1.1
+# aTx / xFinance — Rental AI API (MCP & agent handoff) — v1.1.1
 
-Handoff version: 1.1 (improved MCP guidance + self-contained docs)
+Handoff version: 1.1.1 (domain migration to fintech-advisor.ai)
 API contract: Phase 1 (stable)
 
 Type: Tenant-isolated, Grok-powered options-aware advisor **HTTP API**.
 Primary audience: MCP tool authors, A2A implementers, partner agents.
 
-Public product & API origin: https://atx.fintech-advisor.ai
+Public product & API origin: https://fintech-advisor.ai
 This repo (self-contained for integrators): README.md + docs/mcp-implementation-guide.md
 Static OpenAPI 3.1 (rental-ai only): openapi/rental-ai.yaml
-Live canonical OpenAPI: GET https://atx.fintech-advisor.ai/api/openapi (filter tag `rental-ai`)
+Live canonical OpenAPI: GET https://fintech-advisor.ai/api/openapi (filter tag `rental-ai`)
 
-## Endpoints (all under https://atx.fintech-advisor.ai)
+## Endpoints (all under https://fintech-advisor.ai)
 
 Auth: `Authorization: Bearer atxr_<16-hex>_<64-hex-secret>`
 Scopes per key: chat | strategy | analyze (enforced on routes)

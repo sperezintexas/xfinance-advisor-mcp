@@ -1,40 +1,49 @@
 /**
- * Rental AI MCP Server — Minimal Reference Implementation
+ * Rental AI — Remote HTTP MCP Server (for Grok Business / grok.com/connectors)
  *
- * This is a deliberately small, well-commented stdio MCP server that
- * exposes the three core Rental AI capabilities as tools.
+ * This is the deployable version you register as a Custom MCP connector.
+ * It exposes the same tools as the stdio example but over Streamable HTTP / SSE
+ * so Grok (and other remote MCP clients) can reach it over the public internet.
  *
- * It is intended as a **starting point**, not a production deployment.
- * Copy it, understand every line, then harden it for your environment.
+ * Deploy this, get a public https:// URL, then add it in:
+ *   - https://grok.com/connectors  → New Connector → Custom
+ *   - or the Grok Business Apps section in console.x.ai
  *
- * Usage:
+ * Usage (local):
  *   export RENTAL_AI_KEY="atxr_..."
+ *   export MCP_AUTH_TOKEN="optional-shared-secret-for-the-mcp-endpoint"
  *   npm run dev
  *
- * Then register the server in your MCP host (Claude, Cursor, Grok, etc.)
- * via the stdio command: `node dist/index.js` (after build) or use tsx in dev.
+ * Then point Grok at: http://localhost:3000/mcp
  */
 
+import { createServer, IncomingMessage, ServerResponse } from 'node:http';
+import { randomUUID } from 'node:crypto';
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import {
   CallToolRequestSchema,
   ListToolsRequestSchema,
   Tool
 } from '@modelcontextprotocol/sdk/types.js';
 
+// ---------------------------------------------------------------------------
+// Configuration
+// ---------------------------------------------------------------------------
 const BASE_URL = process.env.RENTAL_AI_BASE_URL || 'https://fintech-advisor.ai';
-const API_KEY = process.env.RENTAL_AI_KEY;
+const RENTAL_KEY = process.env.RENTAL_AI_KEY;
+const MCP_AUTH_TOKEN = process.env.MCP_AUTH_TOKEN; // optional bearer token for the /mcp endpoint
+const PORT = Number(process.env.PORT || 3000);
 
-if (!API_KEY?.startsWith('atxr_')) {
+if (!RENTAL_KEY?.startsWith('atxr_')) {
   console.error('FATAL: RENTAL_AI_KEY must be set to a valid atxr_* key');
   process.exit(1);
 }
 
 // ---------------------------------------------------------------------------
-// Tool Definitions (what the LLM / agent sees)
+// Tool Definitions (identical to stdio version for consistency)
 // ---------------------------------------------------------------------------
-
 const tools: Tool[] = [
   {
     name: 'rental_ai_chat',
@@ -101,15 +110,14 @@ const tools: Tool[] = [
 ];
 
 // ---------------------------------------------------------------------------
-// HTTP Helper (with proper error + header extraction)
+// HTTP helper (re-uses the same pattern as the stdio example)
 // ---------------------------------------------------------------------------
-
 async function rentalFetch(path: string, init: RequestInit = {}) {
   const url = `${BASE_URL}${path}`;
   const res = await fetch(url, {
     ...init,
     headers: {
-      'Authorization': `Bearer ${API_KEY}`,
+      'Authorization': `Bearer ${RENTAL_KEY}`,
       'Content-Type': 'application/json',
       'Accept': 'application/json',
       ...(init.headers || {})
@@ -128,9 +136,8 @@ async function rentalFetch(path: string, init: RequestInit = {}) {
 }
 
 // ---------------------------------------------------------------------------
-// Tool Handlers
+// Tool Handlers (same logic as stdio reference)
 // ---------------------------------------------------------------------------
-
 async function handleChat(args: any) {
   const { message, portfolioId, stream = false } = args;
 
@@ -145,11 +152,10 @@ async function handleChat(args: any) {
 
   const used = res.headers['x-rental-tokens-used'];
   const remaining = res.headers['x-rental-tokens-remaining'];
-
   const meta = used ? `\n\n---\nTokens used: ${used} | remaining: ${remaining} (UTC day)` : '';
 
   return {
-    content: [{ type: 'text', text: res.body?.data?.response + meta }]
+    content: [{ type: 'text', text: (res.body?.data?.response || '') + meta }]
   };
 }
 
@@ -216,17 +222,16 @@ async function handleGetAnalyze(args: any) {
 }
 
 // ---------------------------------------------------------------------------
-// MCP Server Wiring
+// MCP Server
 // ---------------------------------------------------------------------------
-
-const server = new Server(
-  { name: 'rental-ai-mcp-server', version: '0.1.0' },
+const mcpServer = new Server(
+  { name: 'rental-ai-remote-mcp', version: '0.1.0' },
   { capabilities: { tools: {} } }
 );
 
-server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
+mcpServer.setRequestHandler(ListToolsRequestSchema, async () => ({ tools }));
 
-server.setRequestHandler(CallToolRequestSchema, async (req) => {
+mcpServer.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args = {} } = req.params;
 
   try {
@@ -248,16 +253,83 @@ server.setRequestHandler(CallToolRequestSchema, async (req) => {
 });
 
 // ---------------------------------------------------------------------------
-// Start (stdio transport — the MCP host spawns this process)
+// Simple auth middleware for the MCP endpoint
 // ---------------------------------------------------------------------------
+function isAuthorized(req: IncomingMessage): boolean {
+  if (!MCP_AUTH_TOKEN) return true; // no token configured → open (you control network access)
 
-async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('Rental AI MCP server started (stdio). Waiting for host...');
+  const auth = req.headers['authorization'];
+  if (!auth) return false;
+
+  const [scheme, token] = auth.split(' ');
+  if (scheme?.toLowerCase() !== 'bearer') return false;
+
+  return token === MCP_AUTH_TOKEN;
 }
 
-main().catch(err => {
+// ---------------------------------------------------------------------------
+// HTTP Server + Streamable HTTP Transport
+// ---------------------------------------------------------------------------
+async function main() {
+  const transport = new StreamableHTTPServerTransport({
+    sessionIdGenerator: () => randomUUID(),
+    enableJsonResponse: false // let the transport decide (SSE streaming when appropriate)
+  });
+
+  await mcpServer.connect(transport);
+
+  const httpServer = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+    const url = req.url || '/';
+
+    // Health check (no auth needed)
+    if (url === '/health' || url === '/') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        ok: true,
+        service: 'rental-ai-mcp-http',
+        version: '0.1.0'
+      }));
+      return;
+    }
+
+    // MCP endpoint
+    if (url.startsWith('/mcp')) {
+      if (!isAuthorized(req)) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'unauthorized', message: 'Valid Authorization: Bearer <MCP_AUTH_TOKEN> required' }));
+        return;
+      }
+
+      try {
+        await transport.handleRequest(req, res);
+      } catch (err) {
+        console.error('Transport error:', err);
+        if (!res.headersSent) {
+          res.writeHead(500);
+          res.end('Internal Server Error');
+        }
+      }
+      return;
+    }
+
+    // Unknown route
+    res.writeHead(404);
+    res.end('Not Found');
+  });
+
+  httpServer.listen(PORT, () => {
+    console.log(`Rental AI HTTP MCP server listening on port ${PORT}`);
+    console.log(`  MCP endpoint: http://localhost:${PORT}/mcp`);
+    console.log(`  Health:       http://localhost:${PORT}/health`);
+    if (MCP_AUTH_TOKEN) {
+      console.log('  Auth: Bearer token required (MCP_AUTH_TOKEN is set)');
+    } else {
+      console.log('  WARNING: No MCP_AUTH_TOKEN set — endpoint is open (fine for local dev / trusted networks)');
+    }
+  });
+}
+
+main().catch((err) => {
   console.error('Fatal startup error:', err);
   process.exit(1);
 });

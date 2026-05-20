@@ -8,6 +8,22 @@ The underlying HTTP API contract remains Phase 1 (stable paths + schemas).
 
 ---
 
+## [1.1.1] — 2026-05-20
+
+### Changed
+
+- **Canonical domain migration**: Production base URL and all references updated from `atx.fintech-advisor.ai` to `https://fintech-advisor.ai`.
+- Updated across the entire public surface:
+  - README, examples, docs, AGENTS.md, SECURITY.md
+  - `openapi/rental-ai.yaml` (`servers` array + info block)
+  - `llm.txt` and `llms.txt` (machine-readable indexes)
+- Fully removed legacy `atx.` domain references (clean migration).
+- Bumped handoff version to 1.1.1 and OpenAPI `info.version` to 1.0.2 (description/servers change only — no breaking API contract change).
+
+This is primarily a documentation + origin canonicalization release. Existing integrations using the old `atx.` subdomain should update their base URLs.
+
+---
+
 ## [1.1.0] — 2026-05-XX
 
 ### Added

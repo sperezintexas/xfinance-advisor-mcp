@@ -1,12 +1,12 @@
-# xFinance Rental AI — Public MCP & Agent Handoff (v1.1)
+# xFinance Rental AI — Public MCP & Agent Handoff (v1.1.1)
 
 **White-label, tenant-isolated Grok-powered options-aware advisor HTTP API.**
 
 This repository is the **official public landing** for partners, MCP tool authors, A2A implementers, and LLM crawlers. It contains everything you need to build a high-quality integration against the Rental AI surface **without** access to the private monorepo.
 
-**Production base URL:** `https://atx.fintech-advisor.ai`
+**Production base URL:** `https://fintech-advisor.ai`
 
-**Live OpenAPI (canonical):** `GET https://atx.fintech-advisor.ai/api/openapi` — filter by tag `rental-ai`
+**Live OpenAPI (canonical):** `GET https://fintech-advisor.ai/api/openapi` — filter by tag `rental-ai`
 
 ---
 
@@ -130,10 +130,17 @@ Expose the metering headers on every successful response so the host UI can show
 
 See **[examples/README.md](examples/README.md)** for copy-paste curl commands and the reference MCP server.
 
+**Want the tools inside Grok (including Grok Business)?**  
+Deploy the remote HTTP server in `examples/mcp-server-http/` and register the resulting public `/mcp` URL at:
+- https://grok.com/connectors (Custom)
+- or the **Apps** section of the Grok Business console (`console.x.ai/.../grok-business/apps`)
+
+Full deployment + registration guide is in that folder’s README.
+
 Minimal curl smoke test:
 
 ```bash
-export XFINANCE_ORIGIN="https://atx.fintech-advisor.ai"
+export XFINANCE_ORIGIN="https://fintech-advisor.ai"
 export RENTAL_TOKEN="atxr_...your-key..."
 
 curl -sS "$XFINANCE_ORIGIN/api/ai/rent/chat" \
@@ -157,7 +164,7 @@ curl -sS "$XFINANCE_ORIGIN/api/ai/rent/chat" \
 
 ## Versioning & Source of Truth
 
-- **Handoff surface (this repo):** v1.1 (this document + improved MCP guidance)
+- **Handoff surface (this repo):** v1.1.1 (this document + domain migration to fintech-advisor.ai)
 - **API contract:** Phase 1 — paths and major schemas are stable
 - **Live spec:** `GET /api/openapi` (always filter tag `rental-ai`)
 - **Private implementation:** `atx-trusted-advisor` monorepo (`atx-docs/MCP-AI-ADVISOR.md`, `sre-ops/rental-ai-platform.md`)

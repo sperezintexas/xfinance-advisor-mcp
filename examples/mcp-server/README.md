@@ -30,7 +30,7 @@ Then register the server in your MCP host:
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
 | `RENTAL_AI_KEY` | Yes | — | `atxr_*` Bearer key |
-| `RENTAL_AI_BASE_URL` | No | `https://atx.fintech-advisor.ai` | Override for staging / local dev |
+| `RENTAL_AI_BASE_URL` | No | `https://fintech-advisor.ai` | Override for staging / local dev |
 
 ## Exposed Tools
 

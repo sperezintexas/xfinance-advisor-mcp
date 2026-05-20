@@ -28,7 +28,7 @@ When the Rental AI surface changes in the private monorepo:
 
 1. **Verify live contract**
    ```bash
-   curl -sS https://atx.fintech-advisor.ai/api/openapi \
+   curl -sS https://fintech-advisor.ai/api/openapi \
      | jq '.paths | keys | map(select(startswith("/api/ai/rent")))'
    ```
 

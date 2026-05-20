@@ -46,7 +46,7 @@ Example pattern (TypeScript):
 function getRentalClient() {
   const key = process.env.RENTAL_AI_KEY;
   if (!key?.startsWith('atxr_')) throw new Error('Missing or invalid RENTAL_AI_KEY');
-  return new RentalAiClient(key, { baseUrl: 'https://atx.fintech-advisor.ai' });
+  return new RentalAiClient(key, { baseUrl: 'https://fintech-advisor.ai' });
 }
 ```
 

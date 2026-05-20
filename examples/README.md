@@ -1,13 +1,13 @@
 # Quickstart — Rental AI HTTP API + MCP
 
-**Base URL (production):** `https://atx.fintech-advisor.ai`
+**Base URL (production):** `https://fintech-advisor.ai`
 
 **Auth:** `Authorization: Bearer atxr_<16-hex>_<64-hex>`
 
 All examples below assume:
 
 ```bash
-export XFINANCE_ORIGIN="https://atx.fintech-advisor.ai"
+export XFINANCE_ORIGIN="https://fintech-advisor.ai"
 export RENTAL_TOKEN="atxr_...your-key-with-chat-strategy-analyze..."
 ```
 
@@ -96,6 +96,28 @@ Then register it with your MCP host (Cursor, Claude Desktop, Grok, etc.) as a st
 Full instructions and hardening checklist: [examples/mcp-server/README.md](mcp-server/README.md)
 
 Deep implementation patterns (streaming, polling, error mapping, production checklist): **[docs/mcp-implementation-guide.md](../docs/mcp-implementation-guide.md)**
+
+---
+
+## 3. Remote HTTP MCP Server (for Grok Business / Hosted Use)
+
+If you want to register the Rental AI as a first-class **App/Connector** inside Grok (especially via the Grok Business console at `console.x.ai/.../grok-business/apps` or at https://grok.com/connectors), you need a publicly reachable HTTP MCP server.
+
+A complete, deployable reference lives in:
+
+```
+examples/mcp-server-http/
+```
+
+It uses the modern Streamable HTTP transport and is designed to be deployed to Railway, Fly.io, Render, etc.
+
+### When to use this instead of the stdio server
+
+- You want your team to have the tools available inside grok.com chat without installing anything locally.
+- You are a Grok Business customer and want to surface the advisor under **Apps**.
+- You are building an agent that calls the xAI API and wants to inject the Rental AI tools via the `mcp` tool type.
+
+See [examples/mcp-server-http/README.md](mcp-server-http/README.md) for deployment instructions and the exact steps to register the resulting `https://.../mcp` URL.
 
 ---
 

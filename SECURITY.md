@@ -11,7 +11,7 @@ This repository contains **public documentation and API specifications** for the
 
 If you discover a security issue in the **Rental AI API behavior**, the **authentication scheme**, rate limiting, metering, or any production endpoint documented here, please report it privately to the aTx Finance security team.
 
-**Preferred channel:** Email `security@fintech-advisor.ai` (or the address listed on https://atx.fintech-advisor.ai/).
+**Preferred channel:** Email `security@fintech-advisor.ai` (or the address listed on https://fintech-advisor.ai/).
 
 Include:
 - Description of the issue
@@ -24,7 +24,7 @@ We will acknowledge receipt within 48 hours and aim to provide a timeline for re
 ## Scope
 
 This policy covers:
-- The production API surface at `https://atx.fintech-advisor.ai/api/ai/rent/*`
+- The production API surface at `https://fintech-advisor.ai/api/ai/rent/*`
 - The authentication and scoping model (`atxr_*` Bearer keys)
 - Token budget, concurrency, and isolation guarantees described in the docs
 - Any drift between this public spec and live behavior

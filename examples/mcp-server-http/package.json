@@ -1,0 +1,26 @@
+{
+  "name": "rental-ai-mcp-server-http",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Remote HTTP/SSE MCP server for the aTx Finance Rental AI (white-label). Deploy this to get a public URL you can register in Grok Business Apps or at grok.com/connectors.",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.15.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "Unlicense",
+  "keywords": ["mcp", "rental-ai", "atx-finance", "remote-mcp", "grok", "grok-business", "connector"]
+}

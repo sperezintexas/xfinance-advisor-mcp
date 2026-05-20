@@ -4,15 +4,15 @@ info:
   description: |
     White-label, tenant-scoped advisor HTTP surface (`/api/ai/rent/*`).
     **Static export:** `rental-ai` paths and schemas for MCP / agent tooling.
-    **Canonical live document:** `GET https://atx.fintech-advisor.ai/api/openapi` (filter tag `rental-ai`).
-    **Product:** [aTx Trusted Advisory](https://atx.fintech-advisor.ai/).
-  version: 1.0.1
+    **Canonical live document:** `GET https://fintech-advisor.ai/api/openapi` (filter tag `rental-ai`).
+    **Product:** [aTx Trusted Advisory](https://fintech-advisor.ai/).
+  version: 1.0.2
   contact:
     name: aTx Finance
-    url: https://atx.fintech-advisor.ai/
+    url: https://fintech-advisor.ai/
 
 servers:
-  - url: https://atx.fintech-advisor.ai
+  - url: https://fintech-advisor.ai
     description: Production — aTx Trusted Advisory (Next.js product + API origin)
 
 tags:
