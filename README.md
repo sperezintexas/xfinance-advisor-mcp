@@ -179,31 +179,37 @@ The standalone example in [`examples/mcp-server-http/`](examples/mcp-server-http
 
 ## Product screenshots (marketing proof)
 
-Shipped desk captures are hosted on the main app (no login required for static images):
+Preview images below are **committed in this repo** under [`docs/assets/marketing/`](docs/assets/marketing/) so GitHub README renders reliably (relative paths — no dependency on GitHub’s camo proxy or prod deploy state).
 
-**Base URL:** `https://fintech-advisor.ai/marketing-screenshots/<filename>`
+| Preview | File (in repo) | What it shows |
+| ------- | -------------- | --------------- |
+| ![Portfolios desk](docs/assets/marketing/01-portfolios.png) | `01-portfolios.png` | Multi-book portfolio desk + watchlist IV/OI rail |
+| ![xChat strategy compare](docs/assets/marketing/01-covered-call.png) | `01-covered-call.png` | xChat — wheel vs covered call vs PMCC on holdings |
+| ![IV scanner](docs/assets/marketing/02-scanner-iv45-hits.png) | `02-scanner-iv45-hits.png` | IV Rank scanner (>45%) + watchlist context |
+| ![Action scan](docs/assets/marketing/03-xchat-option-scan.png) | `03-xchat-option-scan.png` | xChat options action scan — close candidates |
+| ![Wheel card](docs/assets/marketing/04-new-defined-risk-wheel-card-1920x1080.png) | `04-new-defined-risk-wheel-card-1920x1080.png` | Wheel ideas — income, yield, assignment (16:9) |
+| ![xOptions review](docs/assets/marketing/05-xoptions-step4-payoff-preview-1200x630.png) | `05-xoptions-step4-payoff-preview-1200x630.png` | xOptions review — CSP, advisor note, POP (1200×630) |
+| ![Greeks overlay](docs/assets/marketing/06-portfolio-context-greeks-overlay-1920x1080.png) | `06-portfolio-context-greeks-overlay-1920x1080.png` | Holdings grid — IV rank + Greeks |
 
-Use these in partner decks, Grok connector listings, X/LinkedIn posts, and README embeds. Pair with **“No Atoms Moved. Just Gains Earned.”** — do not invent live metrics or testimonials beyond what each image shows.
+**Production CDN (after main app deploy):** `https://fintech-advisor.ai/marketing-screenshots/<filename>` — same filenames from `public/marketing-screenshots/` in the core app. As of the last check, prod may still return **404** until that tree ships; use repo paths for docs and social until then.
 
-| Preview | Filename | What it shows |
-| ------- | -------- | --------------- |
-| ![Portfolios desk](https://fintech-advisor.ai/marketing-screenshots/01-portfolios.png) | `01-portfolios.png` | Multi-book portfolio desk + watchlist IV/OI rail |
-| ![xChat strategy compare](https://fintech-advisor.ai/marketing-screenshots/01-covered-call.png) | `01-covered-call.png` | xChat — wheel vs covered call vs PMCC on holdings |
-| ![IV scanner](https://fintech-advisor.ai/marketing-screenshots/02-scanner-iv45-hits.png) | `02-scanner-iv45-hits.png` | IV Rank scanner (>45%) + watchlist context |
-| ![Action scan](https://fintech-advisor.ai/marketing-screenshots/03-xchat-option-scan.png) | `03-xchat-option-scan.png` | xChat options action scan — close candidates |
-| ![Wheel card](https://fintech-advisor.ai/marketing-screenshots/04-new-defined-risk-wheel-card-1920x1080.png) | `04-new-defined-risk-wheel-card-1920x1080.png` | Wheel ideas — income, yield, assignment (16:9) |
-| ![xOptions review](https://fintech-advisor.ai/marketing-screenshots/05-xoptions-step4-payoff-preview-1200x630.png) | `05-xoptions-step4-payoff-preview-1200x630.png` | xOptions review — CSP, advisor note, POP (1200×630) |
-| ![Greeks overlay](https://fintech-advisor.ai/marketing-screenshots/06-portfolio-context-greeks-overlay-1920x1080.png) | `06-portfolio-context-greeks-overlay-1920x1080.png` | Holdings grid — IV rank + Greeks |
+**Embed on GitHub (recommended):**
 
-**Embed in Markdown (GitHub / docs):**
+```markdown
+![xChat wheel vs covered call vs PMCC](docs/assets/marketing/01-covered-call.png)
+```
+
+**Embed on the live site (post-deploy):**
 
 ```markdown
 ![xChat wheel vs covered call vs PMCC](https://fintech-advisor.ai/marketing-screenshots/01-covered-call.png)
 ```
 
-**Social sizing:** Use `01-weekly-recap-dark-1200x630.png` or `05-xoptions-step4-payoff-preview-1200x630.png` for X/OG cards; use `*-1920x1080.png` for LinkedIn document posts.
+Pair copy with **“No Atoms Moved. Just Gains Earned.”** — do not invent live metrics or testimonials beyond what each capture shows.
 
-Full filename → channel matrix lives in the private monorepo: `atx-docs/xchat/xfinance-branding-review.md` §9 (updated when UI changes).
+**Social sizing:** `01-weekly-recap-dark-1200x630.png` and `05-xoptions-step4-payoff-preview-1200x630.png` for X/OG; `*-1920x1080.png` for LinkedIn document posts (full set in core app `public/marketing-screenshots/`).
+
+Full filename → channel matrix: `atx-docs/xchat/xfinance-branding-review.md` §9 in the private monorepo.
 
 ---
 
