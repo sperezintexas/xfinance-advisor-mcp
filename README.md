@@ -132,25 +132,84 @@ Expose the metering headers on every successful response so the host UI can show
 
 ---
 
+## Add xFinance to Grok (public Custom Connector)
+
+**Prerequisite:** You need a tenant **Rental AI API key** (`atxr_<16-hex-id>_<64-hex-secret>`) with scopes `chat`, `strategy`, and/or `analyze`. Public Grok accounts cannot call `/mcp` without one — request onboarding from your **aTx Finance / xFinance** contact (or your firm’s tenant admin).
+
+### Steps (grok.com)
+
+1. Open **[grok.com/connectors](https://grok.com/connectors)** (or **Settings → Connectors** in the Grok app).
+2. Choose **New Connector** → **Custom**.
+3. Fill the dialog (same fields as the UI below):
+
+   | Field | Value |
+   | ----- | ----- |
+   | **Name** | `xFinance Rental AI` (or your tenant display name) |
+   | **Server URL** | `https://fintech-advisor.ai/mcp` |
+
+   ![Grok Custom Connector dialog — Name + MCP Server URL](docs/assets/grok-custom-connector.png)
+
+4. Click **Add Connector**.
+5. When Grok asks for **credentials** / **Authorization**, paste your full rental key as a **Bearer** token:
+
+   ```
+   Bearer atxr_<your-key-id>_<your-secret>
+   ```
+
+   Some builds accept only the token body (`atxr_...`) without the `Bearer ` prefix — if one fails, try the other.
+
+6. Confirm the connector lists tools such as `rental_ai_chat`, `rental_ai_create_strategy`, `rental_ai_get_strategy`, `rental_ai_create_analyze`, `rental_ai_get_analyze` (see [`discovery/mcp.json`](discovery/mcp.json) or `GET https://fintech-advisor.ai/mcp/discovery`).
+7. In a Grok chat, enable the connector and try: *“Use xFinance Rental AI to outline a conservative wheel on NVDA.”*
+
+**Grok Business / team:** Admins can publish the same URL under **Apps** in [console.x.ai](https://console.x.ai) so the connector is pre-approved for the org (plan-dependent).
+
+**Why this URL:** The native `/mcp` endpoint runs on the production app with full personas, workspace context, RAG, metering (`x-rental-tokens-*`), and guardrails — no separate proxy required.
+
+**Troubleshooting**
+
+| Symptom | Fix |
+| -------- | ----- |
+| `401` / unauthorized | Key missing or wrong format; ensure `Authorization: Bearer atxr_...` on MCP POSTs. |
+| Connector saves but no tools | Open `GET https://fintech-advisor.ai/mcp/discovery` in a browser; redeploy may be needed if empty. |
+| Streaming stalls | Set `stream: false` on `rental_ai_chat` first; see [implementation guide](docs/mcp-implementation-guide.md). |
+
+The standalone example in [`examples/mcp-server-http/`](examples/mcp-server-http/README.md) is for **self-hosted** MCP only (your own `https://…/mcp` URL + optional `MCP_AUTH_TOKEN`).
+
+---
+
+## Product screenshots (marketing proof)
+
+Shipped desk captures are hosted on the main app (no login required for static images):
+
+**Base URL:** `https://fintech-advisor.ai/marketing-screenshots/<filename>`
+
+Use these in partner decks, Grok connector listings, X/LinkedIn posts, and README embeds. Pair with **“No Atoms Moved. Just Gains Earned.”** — do not invent live metrics or testimonials beyond what each image shows.
+
+| Preview | Filename | What it shows |
+| ------- | -------- | --------------- |
+| ![Portfolios desk](https://fintech-advisor.ai/marketing-screenshots/01-portfolios.png) | `01-portfolios.png` | Multi-book portfolio desk + watchlist IV/OI rail |
+| ![xChat strategy compare](https://fintech-advisor.ai/marketing-screenshots/01-covered-call.png) | `01-covered-call.png` | xChat — wheel vs covered call vs PMCC on holdings |
+| ![IV scanner](https://fintech-advisor.ai/marketing-screenshots/02-scanner-iv45-hits.png) | `02-scanner-iv45-hits.png` | IV Rank scanner (>45%) + watchlist context |
+| ![Action scan](https://fintech-advisor.ai/marketing-screenshots/03-xchat-option-scan.png) | `03-xchat-option-scan.png` | xChat options action scan — close candidates |
+| ![Wheel card](https://fintech-advisor.ai/marketing-screenshots/04-new-defined-risk-wheel-card-1920x1080.png) | `04-new-defined-risk-wheel-card-1920x1080.png` | Wheel ideas — income, yield, assignment (16:9) |
+| ![xOptions review](https://fintech-advisor.ai/marketing-screenshots/05-xoptions-step4-payoff-preview-1200x630.png) | `05-xoptions-step4-payoff-preview-1200x630.png` | xOptions review — CSP, advisor note, POP (1200×630) |
+| ![Greeks overlay](https://fintech-advisor.ai/marketing-screenshots/06-portfolio-context-greeks-overlay-1920x1080.png) | `06-portfolio-context-greeks-overlay-1920x1080.png` | Holdings grid — IV rank + Greeks |
+
+**Embed in Markdown (GitHub / docs):**
+
+```markdown
+![xChat wheel vs covered call vs PMCC](https://fintech-advisor.ai/marketing-screenshots/01-covered-call.png)
+```
+
+**Social sizing:** Use `01-weekly-recap-dark-1200x630.png` or `05-xoptions-step4-payoff-preview-1200x630.png` for X/OG cards; use `*-1920x1080.png` for LinkedIn document posts.
+
+Full filename → channel matrix lives in the private monorepo: `atx-docs/xchat/xfinance-branding-review.md` §9 (updated when UI changes).
+
+---
+
 ## Quickstarts
 
 See **[examples/README.md](examples/README.md)** for copy-paste curl commands and the reference MCP server.
-
-**Best way to use with Grok (recommended):**
-
-Point your Custom Connector at the **native MCP endpoint**:
-
-```
-https://fintech-advisor.ai/mcp
-```
-
-Just provide your `atxr_*` rental key when adding the connector at:
-- https://grok.com/connectors → New Connector → Custom
-- or via the Grok Business Apps area in `console.x.ai`
-
-This is the preferred path for tenants because it runs inside the main platform with full internal context, personas, and guardrails.
-
-The standalone example in `examples/mcp-server-http/` is still useful if you need to run the MCP layer separately or in a different environment.
 
 Minimal curl smoke test:
 
